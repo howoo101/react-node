@@ -1,0 +1,32 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+body {
+	background: #efefef;
+	width: 100%;
+	overflow-x: hidden;
+}
+
+ul,
+ol,
+li {
+	list-style: none;
+}
+a {
+	text-decoration: none;
+}
+fieldset {
+	border: none;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+.h {
+	position: absolute;
+	z-index: -9999;
+	opacity: 0;
+}
