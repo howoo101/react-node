@@ -1,30 +1,19 @@
 import Layout from '../common/Layout';
 import { useRef, useState, useEffect } from 'react';
+import LocalStorage from '../common/LocalStorage';
+import axios from 'axios';
 
 function Community() {
-	const dummy = [
-		{ title: 'Hello6', content: 'Here comes description in detail.' },
-		{ title: 'Hello5', content: 'Here comes description in detail.' },
-		{ title: 'Hello4', content: 'Here comes description in detail.' },
-		{ title: 'Hello3', content: 'Here comes description in detail.' },
-		{ title: 'Hello2', content: 'Here comes description in detail.' },
-		{ title: 'Hello1', content: 'Here comes description in detail.' },
-	];
+	const storage = new LocalStorage();
 
-	//로컬저장소의 데이터를 반환하는 함수정의
-	//저장소에 값이 있으면 해당 값을 다시 JSON형태로 변경해서 반환
-	//값이 없으면 빈 배열을 반환
-	const getLocalData = () => {
-		const data = localStorage.getItem('post');
-		if (data) return JSON.parse(data);
-		else return dummy;
-	};
+	const getLocalData = storage.getLocalData;
 
 	const input = useRef(null);
 	const textarea = useRef(null);
 	const editInput = useRef(null);
 	const editTextarea = useRef(null);
-	const [Posts, setPosts] = useState(getLocalData());
+	// const [Posts, setPosts] = useState(getLocalData());
+	const [Posts, setPosts] = useState([]);
 	const [Allowed, setAllowed] = useState(true);
 
 	const resetForm = () => {
@@ -37,8 +26,18 @@ function Community() {
 			resetForm();
 			return alert('제목과 본문을 모두 입력하세요.');
 		}
-		setPosts([{ title: input.current.value, content: textarea.current.value }, ...Posts]);
-		resetForm();
+		const post = { title: input.current.value, content: textarea.current.value };
+		axios
+			.post('api/create', post)
+			.then((res) => {
+				console.log(res);
+				alert('글작성 성공!!');
+				resetForm();
+			})
+			.catch((err) => {
+				alert('글작성 실패!');
+				console.log(err);
+			});
 	};
 
 	const deletePost = (delIndex) => {
