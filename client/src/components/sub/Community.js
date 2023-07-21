@@ -28,7 +28,7 @@ function Community() {
 		}
 		const post = { title: input.current.value, content: textarea.current.value };
 		axios
-			.post('api/create', post)
+			.post('api/community/create', post)
 			.then((res) => {
 				console.log(res);
 				alert('글작성 성공!!');
@@ -88,8 +88,11 @@ function Community() {
 	};
 
 	useEffect(() => {
-		localStorage.setItem('post', JSON.stringify(Posts));
-	}, [Posts]);
+		axios.get('/api/community/read').then((res) => {
+			console.log(res.data);
+			setPosts(res.data.communityList);
+		});
+	}, []);
 
 	return (
 		<Layout name={'Community'}>
