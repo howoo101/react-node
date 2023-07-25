@@ -44,7 +44,16 @@ function Community() {
 
 	const deletePost = (id) => {
 		if (!window.confirm('해당 게시글을 삭제하겠습니까?')) return;
-		setPosts(Posts.filter((_, idx) => idx !== id));
+
+		axios.post('/api/community/delete/' + id, { id: id }).then((res) => {
+			if (res.data.success) {
+				alert('게시글이 삭제되었습니다.');
+			} else {
+				alert('게시글 삭제에 실패했습니다.');
+			}
+		});
+
+		setPosts(Posts.filter((post, idx) => post.id !== id));
 	};
 
 	const enableUpdate = (id) => {

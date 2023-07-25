@@ -54,7 +54,6 @@ router.post('/detail', (req, res) => {
 });
 
 router.post('/edit/:id', (req, res) => {
-	console.log(req.body);
 	const edit = {
 		title: req.body.title,
 		content: req.body.content,
@@ -65,4 +64,13 @@ router.post('/edit/:id', (req, res) => {
 		.catch((err) => res.json({ success: false, err: err }));
 });
 
+//글 삭제요청 라우터
+router.post('/delete/:id', (req, res) => {
+	Post.deleteOne({ communityNum: req.body.id })
+		.exec()
+		.then(() => {
+			res.json({ success: true });
+		})
+		.catch(() => res.json({ success: false }));
+});
 module.exports = router;
