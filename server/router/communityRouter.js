@@ -30,7 +30,7 @@ router.get('/read', (req, res) => {
 	Post.find()
 		.exec()
 		.then((doc) => {
-			console.log(doc);
+			// console.log(doc);
 			res.json({ success: true, communityList: doc });
 		})
 		.catch((err) => {
@@ -44,13 +44,25 @@ router.post('/detail', (req, res) => {
 	Post.findOne({ communityNum: req.body.id })
 		.exec()
 		.then((doc) => {
-			console.log(doc);
+			// console.log(doc);
 			res.json({ success: true, community: doc });
 		})
 		.catch((err) => {
 			console.log(err);
 			res.json({ success: false });
 		});
+});
+
+router.post('/edit/:id', (req, res) => {
+	console.log(req.body);
+	const edit = {
+		title: req.body.title,
+		content: req.body.content,
+	};
+	Post.updateOne({ communityNum: req.body.id }, { $set: edit })
+		.exec()
+		.then((doc) => res.json({ success: true, detail: doc }))
+		.catch((err) => res.json({ success: false, err: err }));
 });
 
 module.exports = router;

@@ -2,6 +2,7 @@ import Layout from '../common/Layout';
 import { useRef, useState, useEffect } from 'react';
 import LocalStorage from '../common/LocalStorage';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 function Community() {
 	const storage = new LocalStorage();
@@ -15,6 +16,7 @@ function Community() {
 	// const [Posts, setPosts] = useState(getLocalData());
 	const [Posts, setPosts] = useState([]);
 	const [Allowed, setAllowed] = useState(true);
+	const [Detail, setDetail] = useState({});
 
 	const resetForm = () => {
 		input.current.value = '';
@@ -40,28 +42,28 @@ function Community() {
 			});
 	};
 
-	const deletePost = (delIndex) => {
+	const deletePost = (id) => {
 		if (!window.confirm('해당 게시글을 삭제하겠습니까?')) return;
-		setPosts(Posts.filter((_, idx) => idx !== delIndex));
+		setPosts(Posts.filter((_, idx) => idx !== id));
 	};
 
-	const enableUpdate = (editIndex) => {
+	const enableUpdate = (id) => {
 		//수정모드 진입함수 호출시 Allowd가 true일때에만 로직이 실행되도록 처리
 		if (!Allowed) return;
 		//일직 로직이 실행되면 allowed값을 false로 바꿔서 이후부터는 다시 수정모드로 진입되는 것을 방지
 		setAllowed(false);
-		setPosts(
-			Posts.map((post, postIndex) => {
-				if (editIndex === postIndex) post.enableUpdate = true;
+		setDetail(
+			Posts.map((post, _) => {
+				if (id === post.communityNum) post.enableUpdate = true;
 				return post;
 			})
 		);
 	};
 
-	const disableUpdate = (editIndex) => {
+	const disableUpdate = (id) => {
 		setPosts(
-			Posts.map((post, postIndex) => {
-				if (editIndex === postIndex) post.enableUpdate = false;
+			Posts.map((post, _) => {
+				if (id === post.communityNum) post.enableUpdate = false;
 				return post;
 			})
 		);
@@ -69,28 +71,39 @@ function Community() {
 		setAllowed(true);
 	};
 
-	const updatePost = (editIndex) => {
+	const updatePost = (id) => {
 		if (!editInput.current.value.trim() || !editTextarea.current.value.trim()) {
 			return alert('수정할 제목과 본문을 모두 입력하세요.');
 		}
 
-		setPosts(
-			Posts.map((post, postIndex) => {
-				if (postIndex === editIndex) {
-					post.title = editInput.current.value;
-					post.content = editTextarea.current.value;
-					post.enableUpdate = false;
-				}
-				return post;
-			})
-		);
+		const item = Posts.find((post, _) => {
+			if (post.communityNum === id) {
+				post.title = editInput.current.value;
+				post.content = editTextarea.current.value;
+				post.enableUpdate = false;
+				post.id = id;
+			}
+			return post;
+		});
+
+		axios.post(`/api/community/edit/${id}`, item).then((res) => {
+			if (res.data.success) {
+				alert('글 수정이 완료되었습니다.');
+			} else {
+				alert('글 수정에 실패했습니다.');
+			}
+		});
 		setAllowed(true);
 	};
+
+	// useEffect(() => {}, [Posts]);
 
 	useEffect(() => {
 		axios.get('/api/community/read').then((res) => {
 			console.log(res.data);
-			setPosts(res.data.communityList);
+			if (res.data.success) {
+				setPosts(res.data.communityList);
+			}
 		});
 	}, []);
 
@@ -124,8 +137,8 @@ function Community() {
 									</div>
 
 									<nav className='btnSet'>
-										<button onClick={() => disableUpdate(idx)}>CANCEL</button>
-										<button onClick={() => updatePost(idx)}>UPDATE</button>
+										<button onClick={() => disableUpdate(post.communityNum)}>CANCEL</button>
+										<button onClick={() => updatePost(post.communityNum)}>UPDATE</button>
 									</nav>
 								</>
 							) : (
@@ -137,8 +150,8 @@ function Community() {
 									</div>
 
 									<nav className='btnSet'>
-										<button onClick={() => enableUpdate(idx)}>EDIT</button>
-										<button onClick={() => deletePost(idx)}>DELETE</button>
+										<button onClick={() => enableUpdate(post.communityNum)}>EDIT</button>
+										<button onClick={() => deletePost(post.communityNum)}>DELETE</button>
 									</nav>
 								</>
 							)}
